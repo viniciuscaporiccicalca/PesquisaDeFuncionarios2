@@ -89,20 +89,138 @@ function handleSignoutClick() {
 }
 
 
-// --- LÓGICA DO APLICATIVO (Adaptada do seu código original) ---
+// =================================================================================
+// INÍCIO - LÓGICA DO APLICATIVO
+// =================================================================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Referências aos elementos do DOM
+// Variável global para armazenar os dados dos funcionários
+let funcionarios = [];
+
+// --- FUNÇÕES GLOBAIS ---
+// Estas funções agora são visíveis para todo o script, incluindo os callbacks da API do Google.
+
+async function carregarFuncionarios() {
     const tableBody = document.getElementById('table-body');
+    try {
+        const response = await gapi.client.sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID,
+            range: RANGE,
+        });
+        
+        const data = response.result.values;
+        if (!data || data.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="9">Nenhum dado encontrado na planilha. Verifique o nome da aba e o intervalo.</td></tr>`;
+            return;
+        }
+
+        const headers = data[0];
+        const funcionariosData = data.slice(1).map(row => {
+            const func = {};
+            headers.forEach((header, index) => {
+                func[header] = row[index];
+            });
+            return func;
+        });
+
+        funcionarios = funcionariosData;
+        aplicarFiltros();
+
+    } catch (error) {
+        console.error("Erro ao carregar dados do Google Sheets:", error);
+        const errorMsg = JSON.parse(error.body).error.message;
+        tableBody.innerHTML = `<tr><td colspan="9">Falha ao carregar os dados: ${errorMsg}</td></tr>`;
+    }
+}
+
+function renderTable(data) {
+    const tableBody = document.getElementById('table-body');
+    tableBody.innerHTML = ''; 
+
+    if (data.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="9">Nenhum funcionário encontrado com os filtros aplicados.</td></tr>`;
+        return;
+    }
+
+    data.forEach(func => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${func.NOME || ''}</td>
+            <td>${func.SETOR || ''}</td>
+            <td>${func.Unidade || ''}</td>
+            <td>${func.Idade || ''}</td>
+            <td>${func['Mês Nasc.'] || ''}</td>
+            <td>${func['Data Nasc.'] || ''}</td>
+            <td>${func['Tempo de Empresa'] !== undefined ? func['Tempo de Empresa'] : ''}</td>
+            <td>${func['Mês Adm.'] || ''}</td>
+            <td>${func['Data Adm.'] || ''}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function aplicarFiltros() {
+    const searchInput = document.getElementById('search-input');
+    const filterAniversario = document.getElementById('filter-aniversario');
+    const filterAdmissao = document.getElementById('filter-admissao');
+    const filterTempo = document.getElementById('filter-tempo');
+
+    const searchTerm = searchInput.value.toLowerCase();
+    const mesAniversario = filterAniversario.value;
+    const mesAdmissao = filterAdmissao.value;
+    const tempoEmpresa = filterTempo.value;
+
+    let filteredData = funcionarios;
+
+    if (searchTerm) {
+        filteredData = filteredData.filter(func =>
+            (func.NOME?.toLowerCase().includes(searchTerm) ||
+             func.SETOR?.toLowerCase().includes(searchTerm) ||
+             func.Unidade?.toLowerCase().includes(searchTerm))
+        );
+    }
+    if (mesAniversario) {
+        filteredData = filteredData.filter(func => func['Mês Nasc.'] == mesAniversario);
+    }
+    if (mesAdmissao) {
+        filteredData = filteredData.filter(func => func['Mês Adm.'] == mesAdmissao);
+    }
+    if (tempoEmpresa !== '') {
+        filteredData = filteredData.filter(func => func['Tempo de Empresa'] == tempoEmpresa);
+    }
+    renderTable(filteredData);
+}
+
+function calcularIdade(dataNasc) {
+    const hoje = new Date();
+    const nasc = new Date(dataNasc);
+    let idade = hoje.getFullYear() - nasc.getFullYear();
+    const m = hoje.getMonth() - nasc.getMonth();
+    if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) {
+        idade--;
+    }
+    return idade;
+}
+
+function calcularTempoDeEmpresa(dataAdm) {
+    const hoje = new Date();
+    const adm = new Date(dataAdm);
+    let anos = hoje.getFullYear() - adm.getFullYear();
+    const m = hoje.getMonth() - adm.getMonth();
+    if (m < 0 || (m === 0 && hoje.getDate() < adm.getDate())) {
+        anos--;
+    }
+    return anos;
+}
+
+// --- INICIALIZAÇÃO QUANDO O DOCUMENTO ESTÁ PRONTO ---
+// Este bloco agora só inicializa os elementos e adiciona os "event listeners".
+document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-input');
     const cadastroForm = document.getElementById('cadastro-form');
-    
     const filterAniversario = document.getElementById('filter-aniversario');
     const filterAdmissao = document.getElementById('filter-admissao');
     const filterTempo = document.getElementById('filter-tempo');
     const clearFiltersBtn = document.getElementById('clear-filters-btn');
-
-    let funcionarios = [];
 
     function popularFiltroTempo() {
         for (let i = 0; i <= 40; i++) {
@@ -112,118 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
             filterTempo.appendChild(option);
         }
     }
-
-    // --- FUNÇÃO MODIFICADA PARA USAR A API DO GOOGLE SHEETS ---
-    async function carregarFuncionarios() {
-        try {
-            const response = await gapi.client.sheets.spreadsheets.values.get({
-                spreadsheetId: SPREADSHEET_ID,
-                range: RANGE,
-            });
-            
-            // Converte os dados da planilha (array de arrays) para um array de objetos
-            const data = response.result.values;
-            if (!data || data.length == 0) {
-                tableBody.innerHTML = `<tr><td colspan="9">Nenhum dado encontrado na planilha. Verifique o nome da aba e o intervalo.</td></tr>`;
-                return;
-            }
-
-            const headers = data[0]; // Pega a primeira linha como cabeçalho
-            const funcionariosData = data.slice(1).map(row => {
-                const func = {};
-                headers.forEach((header, index) => {
-                    func[header] = row[index];
-                });
-                return func;
-            });
-
-            funcionarios = funcionariosData;
-            aplicarFiltros();
-
-        } catch (error) {
-            console.error("Erro ao carregar dados do Google Sheets:", error);
-            const errorMsg = JSON.parse(error.body).error.message;
-            tableBody.innerHTML = `<tr><td colspan="9">Falha ao carregar os dados: ${errorMsg}</td></tr>`;
-        }
-    }
-
-    function renderTable(data) {
-        tableBody.innerHTML = ''; 
-
-        if (data.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="9">Nenhum funcionário encontrado com os filtros aplicados.</td></tr>`;
-            return;
-        }
-
-        data.forEach(func => {
-            const row = document.createElement('tr');
-            // Os nomes das colunas devem ser EXATAMENTE IGUAIS aos da sua planilha
-            row.innerHTML = `
-                <td>${func.NOME || ''}</td>
-                <td>${func.SETOR || ''}</td>
-                <td>${func.Unidade || ''}</td>
-                <td>${func.Idade || ''}</td>
-                <td>${func['Mês Nasc.'] || ''}</td>
-                <td>${func['Data Nasc.'] || ''}</td>
-                <td>${func['Tempo de Empresa'] !== undefined ? func['Tempo de Empresa'] : ''}</td>
-                <td>${func['Mês Adm.'] || ''}</td>
-                <td>${func['Data Adm.'] || ''}</td>
-            `;
-            tableBody.appendChild(row);
-        });
-    }
-
-    function aplicarFiltros() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const mesAniversario = filterAniversario.value;
-        const mesAdmissao = filterAdmissao.value;
-        const tempoEmpresa = filterTempo.value;
-
-        let filteredData = funcionarios;
-
-        if (searchTerm) {
-            filteredData = filteredData.filter(func =>
-                (func.NOME?.toLowerCase().includes(searchTerm) ||
-                 func.SETOR?.toLowerCase().includes(searchTerm) ||
-                 func.Unidade?.toLowerCase().includes(searchTerm))
-            );
-        }
-        if (mesAniversario) {
-            filteredData = filteredData.filter(func => func['Mês Nasc.'] == mesAniversario);
-        }
-        if (mesAdmissao) {
-            filteredData = filteredData.filter(func => func['Mês Adm.'] == mesAdmissao);
-        }
-        if (tempoEmpresa !== '') {
-            filteredData = filteredData.filter(func => func['Tempo de Empresa'] == tempoEmpresa);
-        }
-        renderTable(filteredData);
-    }
     
-    // As funções de cálculo permanecem as mesmas
-    function calcularIdade(dataNasc) {
-        const hoje = new Date();
-        const nasc = new Date(dataNasc);
-        let idade = hoje.getFullYear() - nasc.getFullYear();
-        const m = hoje.getMonth() - nasc.getMonth();
-        if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) {
-            idade--;
-        }
-        return idade;
-    }
-
-    function calcularTempoDeEmpresa(dataAdm) {
-        const hoje = new Date();
-        const adm = new Date(dataAdm);
-        let anos = hoje.getFullYear() - adm.getFullYear();
-        const m = hoje.getMonth() - adm.getMonth();
-        if (m < 0 || (m === 0 && hoje.getDate() < adm.getDate())) {
-            anos--;
-        }
-        return anos;
-    }
-
-    // Event listeners dos filtros
     searchInput.addEventListener('input', aplicarFiltros);
     filterAniversario.addEventListener('change', aplicarFiltros);
     filterAdmissao.addEventListener('change', aplicarFiltros);
@@ -237,7 +244,6 @@ document.addEventListener('DOMContentLoaded', () => {
         aplicarFiltros();
     });
 
-    // --- FUNÇÃO MODIFICADA PARA CADASTRAR USANDO A API DO GOOGLE SHEETS ---
     cadastroForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
@@ -253,7 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const dataNascFormatada = dataNascObj.toLocaleDateString('pt-BR');
         const dataAdmFormatada = dataAdmObj.toLocaleDateString('pt-BR');
 
-        // IMPORTANTE: A ordem dos valores aqui deve ser a mesma ordem das colunas na sua planilha
         const novaLinha = [
             nome,
             setor.toUpperCase(),
@@ -286,7 +291,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Inicia a aplicação
     popularFiltroTempo();
-    // A função carregarFuncionarios() agora é chamada após a autorização
 });
