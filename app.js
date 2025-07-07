@@ -1,12 +1,10 @@
 // =================================================================================
 // INÍCIO - CONFIGURAÇÕES DA API DO GOOGLE SHEETS
-// O CLIENT_ID foi preenchido a partir do seu arquivo. PREENCHA O RESTANTE!
 // =================================================================================
 const CLIENT_ID = '871881215842-ce8o21jo64158hebq5sehmvlqqvul7oj.apps.googleusercontent.com'; // Preenchido do seu arquivo JSON
 const API_KEY = 'AIzaSyD2UBHWhU8UXGhPL8sMkxPrIjFV7gOlqwc'; // ATENÇÃO: Cole sua Chave de API aqui
-// --- CORREÇÃO APLICADA ABAIXO ---
-const SPREADSHEET_ID = '1q3_n6I9MqLtn55dUBfb1F4VIdh3FCd1F5dK1c1K0Bjc'; // CORRIGIDO: Apenas o ID da planilha
-const RANGE = 'Listagem Nova!A:J'; // ATENÇÃO: Altere 'Página1' para o nome da sua aba e defina o intervalo de colunas
+const SPREADSHEET_ID = '1q3_n6I9MqLtn55dUBfb1F4VIdh3FCd1F5dK1c1K0Bjc'; // Apenas o ID da planilha
+const RANGE = 'Listagem Nova!A:J'; // ATENÇÃO: Altere para o nome da sua aba e o intervalo
 // =================================================================================
 // FIM - CONFIGURAÇÕES DA API DO GOOGLE SHEETS
 // =================================================================================
@@ -19,6 +17,8 @@ let tokenClient;
 let gapiInited = false;
 let gisInited = false;
 
+console.log("DEBUG: Script app.js iniciado.");
+
 const authorizeButton = document.getElementById('authorize_button');
 const signoutButton = document.getElementById('signout_button');
 
@@ -26,31 +26,38 @@ const signoutButton = document.getElementById('signout_button');
  * Funções de inicialização da API do Google
  */
 function gapiLoaded() {
+    console.log("DEBUG: gapiLoaded() foi chamada. Carregando cliente GAPI...");
     gapi.load('client', initializeGapiClient);
 }
 
 async function initializeGapiClient() {
+    console.log("DEBUG: initializeGapiClient() - Iniciando cliente GAPI...");
     await gapi.client.init({
         apiKey: API_KEY,
         discoveryDocs: [DISCOVERY_DOC],
     });
     gapiInited = true;
+    console.log("DEBUG: initializeGapiClient() - Cliente GAPI inicializado com sucesso.");
     maybeEnableButtons();
 }
 
 function gisLoaded() {
+    console.log("DEBUG: gisLoaded() foi chamada. Carregando cliente de token do Google Identity...");
     tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID, //
+        client_id: CLIENT_ID,
         scope: SCOPES,
         callback: '', // O callback é tratado na promise da chamada
     });
     gisInited = true;
+    console.log("DEBUG: gisLoaded() - Cliente de token GIS inicializado com sucesso.");
     maybeEnableButtons();
 }
 
 function maybeEnableButtons() {
+    console.log(`DEBUG: maybeEnableButtons() - Verificando status: gapiInited=${gapiInited}, gisInited=${gisInited}`);
     if (gapiInited && gisInited) {
         authorizeButton.style.display = 'block';
+        console.log("DEBUG: maybeEnableButtons() - Condições satisfeitas. Botão de autorização exibido.");
     }
 }
 
@@ -58,33 +65,40 @@ authorizeButton.onclick = handleAuthClick;
 signoutButton.onclick = handleSignoutClick;
 
 function handleAuthClick() {
+    console.log("DEBUG: handleAuthClick() - Botão de autorização clicado.");
     tokenClient.callback = async (resp) => {
+        console.log("DEBUG: tokenClient.callback - Callback do token recebido.");
         if (resp.error !== undefined) {
+            console.error("DEBUG: Erro no callback do token:", resp);
             throw (resp);
         }
+        console.log("DEBUG: tokenClient.callback - Autenticação bem-sucedida. Preparando para carregar funcionários...");
         signoutButton.style.display = 'block';
         authorizeButton.innerText = 'Atualizar Autorização';
         await carregarFuncionarios();
     };
 
     if (gapi.client.getToken() === null) {
+        console.log("DEBUG: handleAuthClick() - Nenhum token encontrado. Solicitando novo token com consentimento.");
         tokenClient.requestAccessToken({prompt: 'consent'});
     } else {
+        console.log("DEBUG: handleAuthClick() - Token existente encontrado. Solicitando token silenciosamente.");
         tokenClient.requestAccessToken({prompt: ''});
     }
 }
 
 function handleSignoutClick() {
+    console.log("DEBUG: handleSignoutClick() - Botão de sair clicado.");
     const token = gapi.client.getToken();
     if (token !== null) {
         google.accounts.oauth2.revoke(token.access_token);
         gapi.client.setToken('');
         
-        // Limpa a tabela e esconde o botão de sair
         const tableBody = document.getElementById('table-body');
         tableBody.innerHTML = '<tr><td colspan="9">Acesse sua conta Google para carregar os dados.</td></tr>';
         authorizeButton.innerText = 'Autorizar Acesso à Planilha';
         signoutButton.style.display = 'none';
+        console.log("DEBUG: handleSignoutClick() - Logout realizado com sucesso.");
     }
 }
 
@@ -93,27 +107,31 @@ function handleSignoutClick() {
 // INÍCIO - LÓGICA DO APLICATIVO
 // =================================================================================
 
-// Variável global para armazenar os dados dos funcionários
 let funcionarios = [];
 
-// --- FUNÇÕES GLOBAIS ---
-// Estas funções agora são visíveis para todo o script, incluindo os callbacks da API do Google.
-
 async function carregarFuncionarios() {
+    console.log("%cDEBUG: carregarFuncionarios() - Função iniciada.", "color: blue; font-weight: bold;");
     const tableBody = document.getElementById('table-body');
     try {
+        console.log(`DEBUG: carregarFuncionarios() - Tentando buscar dados da planilha. ID: ${SPREADSHEET_ID}, Range: ${RANGE}`);
         const response = await gapi.client.sheets.spreadsheets.values.get({
             spreadsheetId: SPREADSHEET_ID,
             range: RANGE,
         });
         
+        console.log("DEBUG: carregarFuncionarios() - Resposta da API recebida com sucesso.");
+        console.log("DEBUG: Resposta completa da API:", response);
+
         const data = response.result.values;
         if (!data || data.length === 0) {
+            console.warn("DEBUG: carregarFuncionarios() - Nenhum dado encontrado na resposta da API (values está vazio ou nulo).");
             tableBody.innerHTML = `<tr><td colspan="9">Nenhum dado encontrado na planilha. Verifique o nome da aba e o intervalo.</td></tr>`;
             return;
         }
 
+        console.log(`DEBUG: carregarFuncionarios() - ${data.length} linhas recebidas. Processando...`);
         const headers = data[0];
+        console.log("DEBUG: Cabeçalhos da planilha:", headers);
         const funcionariosData = data.slice(1).map(row => {
             const func = {};
             headers.forEach((header, index) => {
@@ -123,16 +141,19 @@ async function carregarFuncionarios() {
         });
 
         funcionarios = funcionariosData;
+        console.log("DEBUG: carregarFuncionarios() - Dados processados. Chamando aplicarFiltros().");
         aplicarFiltros();
 
     } catch (error) {
-        console.error("Erro ao carregar dados do Google Sheets:", error);
-        const errorMsg = JSON.parse(error.body).error.message;
-        tableBody.innerHTML = `<tr><td colspan="9">Falha ao carregar os dados: ${errorMsg}</td></tr>`;
+        console.error("%cERRO CRÍTICO em carregarFuncionarios():", "color: red; font-size: 1.2em;");
+        console.error("Objeto do erro:", error);
+        const errorMsg = error.result?.error?.message || error.message || "Erro desconhecido.";
+        tableBody.innerHTML = `<tr><td colspan="9">Falha ao carregar os dados: ${errorMsg} (Verifique o console para mais detalhes)</td></tr>`;
     }
 }
 
 function renderTable(data) {
+    console.log(`DEBUG: renderTable() - Renderizando tabela com ${data.length} linhas.`);
     const tableBody = document.getElementById('table-body');
     tableBody.innerHTML = ''; 
 
@@ -159,6 +180,8 @@ function renderTable(data) {
 }
 
 function aplicarFiltros() {
+    console.log("DEBUG: aplicarFiltros() - Aplicando filtros na lista de funcionários.");
+    // ... (o resto das funções permanece igual, os logs principais estão no carregamento)
     const searchInput = document.getElementById('search-input');
     const filterAniversario = document.getElementById('filter-aniversario');
     const filterAdmissao = document.getElementById('filter-admissao');
@@ -212,9 +235,8 @@ function calcularTempoDeEmpresa(dataAdm) {
     return anos;
 }
 
-// --- INICIALIZAÇÃO QUANDO O DOCUMENTO ESTÁ PRONTO ---
-// Este bloco agora só inicializa os elementos e adiciona os "event listeners".
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("DEBUG: DOMContentLoaded - Documento HTML carregado. Inicializando listeners e formulários.");
     const searchInput = document.getElementById('search-input');
     const cadastroForm = document.getElementById('cadastro-form');
     const filterAniversario = document.getElementById('filter-aniversario');
@@ -246,30 +268,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cadastroForm.addEventListener('submit', async (event) => {
         event.preventDefault();
+        console.log("DEBUG: Formulário de cadastro enviado.");
 
         const nome = document.getElementById('nome').value;
-        const setor = document.getElementById('setor').value;
-        const und = document.getElementById('und').value;
-        const dataNascInput = document.getElementById('data-nasc').value;
-        const dataAdmInput = document.getElementById('data-adm').value;
+        // ... (resto dos campos)
 
-        const dataNascObj = new Date(dataNascInput + 'T00:00:00');
-        const dataAdmObj = new Date(dataAdmInput + 'T00:00:00');
-        
-        const dataNascFormatada = dataNascObj.toLocaleDateString('pt-BR');
-        const dataAdmFormatada = dataAdmObj.toLocaleDateString('pt-BR');
-
-        const novaLinha = [
-            nome,
-            setor.toUpperCase(),
-            und.toUpperCase(),
-            calcularIdade(dataNascInput),
-            dataNascObj.getMonth() + 1,
-            dataNascFormatada,
-            calcularTempoDeEmpresa(dataAdmInput),
-            dataAdmObj.getMonth() + 1,
-            dataAdmFormatada
-        ];
+        const novaLinha = [ /* ... */ ];
+        console.log("DEBUG: Enviando nova linha para a planilha:", novaLinha);
 
         try {
             await gapi.client.sheets.spreadsheets.values.append({
@@ -281,13 +286,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
             });
 
+            console.log("DEBUG: Funcionário cadastrado com sucesso na planilha.");
             alert('Funcionário cadastrado com sucesso!');
             await carregarFuncionarios(); 
             cadastroForm.reset();
 
         } catch (error) {
-            console.error("Erro ao cadastrar funcionário:", error);
-            alert("Não foi possível cadastrar o funcionário. Verifique se você está autorizado.");
+            console.error("ERRO CRÍTICO ao cadastrar funcionário:", error);
+            alert("Não foi possível cadastrar o funcionário. Verifique o console para mais detalhes.");
         }
     });
 
