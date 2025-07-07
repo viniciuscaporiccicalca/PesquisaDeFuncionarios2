@@ -1,0 +1,121 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+h1, h2 {
+    color: #0056b3;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Formulários */
+.form-container, .search-container {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+input[type="text"], input[type="date"], select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+label {
+    padding: 10px 0;
+    font-weight: bold;
+    color: #555;
+    align-self: center;
+}
+
+button {
+    background-color: #0056b3;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: block;
+    width: 100%;
+}
+
+button:hover {
+    background-color: #004494;
+}
+
+/* --- NOVO ESTILO PARA OS FILTROS --- */
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    align-items: center;
+}
+
+.clear-btn {
+    background-color: #6c757d; /* Cinza */
+    padding: 11px 20px;
+}
+.clear-btn:hover {
+    background-color: #5a6268;
+}
+/* --- FIM DO NOVO ESTILO --- */
+
+
+#search-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Tabela */
+#funcionarios-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#funcionarios-table th, #funcionarios-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+    vertical-align: middle; 
+}
+
+#funcionarios-table th {
+    background-color: #0056b3;
+    color: white;
+    font-weight: bold;
+}
+
+#funcionarios-table tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+#funcionarios-table tbody tr:hover {
+    background-color: #e2e2e2;
+}

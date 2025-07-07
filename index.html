@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Funcionários</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Painel de Gestão de Funcionários</h1>
+
+        <div id="auth-container" style="text-align: center; margin-bottom: 20px;">
+            <button id="authorize_button" style="display: none;">Autorizar Acesso à Planilha</button>
+            <button id="signout_button" style="display: none;">Sair</button>
+        </div>
+
+        <div class="form-container">
+            <h2>Cadastrar Novo Funcionário</h2>
+            <form id="cadastro-form">
+                <div class="form-grid">
+                    <input type="text" id="nome" placeholder="Nome do Funcionário" required>
+                    <input type="text" id="setor" placeholder="Setor" required>
+                    <input type="text" id="und" placeholder="Unidade (ex: PV, CM, TO)" required>
+                    <label for="data-nasc">Data de Nascimento:</label>
+                    <input type="date" id="data-nasc" required>
+                    <label for="data-adm">Data de Admissão:</label>
+                    <input type="date" id="data-adm" required>
+                </div>
+                <button type="submit">Cadastrar</button>
+            </form>
+        </div>
+
+        <div class="search-container">
+            <h2>Buscar e Filtrar Funcionários</h2>
+            <div class="filters-grid">
+                <input type="text" id="search-input" placeholder="Buscar por nome, setor, unidade...">
+                
+                <select id="filter-aniversario">
+                    <option value="">Aniversário (Mês)</option>
+                    <option value="1">Janeiro</option>
+                    <option value="2">Fevereiro</option>
+                    <option value="3">Março</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Maio</option>
+                    <option value="6">Junho</option>
+                    <option value="7">Julho</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+
+                <select id="filter-admissao">
+                    <option value="">Admissão (Mês)</option>
+                    <option value="1">Janeiro</option>
+                    <option value="2">Fevereiro</option>
+                    <option value="3">Março</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Maio</option>
+                    <option value="6">Junho</option>
+                    <option value="7">Julho</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+
+                <select id="filter-tempo">
+                    <option value="">Tempo de Empresa (Anos)</option>
+                    </select>
+
+                <button id="clear-filters-btn" class="clear-btn">Limpar Filtros</button>
+            </div>
+        </div>
+
+        <table id="funcionarios-table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Setor</th>
+                    <th>Unidade</th>
+                    <th>Idade</th>
+                    <th>Mês Nasc.</th>
+                    <th>Data Nasc.</th>
+                    <th>Tempo de Empresa</th>
+                    <th>Mês Adm.</th>
+                    <th>Data Adm.</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                </tbody>
+        </table>
+
+    </div>
+
+    <script src="app.js"></script>
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+</body>
+</html>
