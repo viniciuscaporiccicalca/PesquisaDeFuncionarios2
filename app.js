@@ -3,8 +3,8 @@
 // =================================================================================
 const CLIENT_ID = '871881215842-ce8o21jo64158hebq5sehmvlqqvul7oj.apps.googleusercontent.com'; // Preenchido do seu arquivo JSON
 const API_KEY = 'AIzaSyD2UBHWhU8UXGhPL8sMkxPrIjFV7gOlqwc'; // ATENÇÃO: Cole sua Chave de API aqui
-const SPREADSHEET_ID = '1q3_n6I9MqLtn55dUBfb1F4VIdh3FCd1F5dK1c1K0Bjc'; // Apenas o ID da planilha
-const RANGE = 'Listagem Nova!A:I'; // ATENÇÃO: Altere para o nome da sua aba e o intervalo
+const SPREADSHEET_ID = '1jOQluhPVF9Tz0czYQ3ZKvfE9HNUzZtgWSkSDoYD710g'; // Apenas o ID da planilha
+const RANGE = 'Página1!A:I'; // ATENÇÃO: Altere para o nome da sua aba e o intervalo
 // =================================================================================
 // FIM - CONFIGURAÇÕES DA API DO GOOGLE SHEETS
 // =================================================================================
