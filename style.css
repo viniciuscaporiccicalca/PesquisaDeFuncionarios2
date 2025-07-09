@@ -21,19 +21,12 @@ h1, h2 {
     margin-bottom: 20px;
 }
 
-/* Formulários */
-.form-container, .search-container {
+/* Container de Busca e Filtro */
+.search-container {
     margin-bottom: 30px;
     padding: 20px;
     border: 1px solid #ddd;
     border-radius: 8px;
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 15px;
 }
 
 input[type="text"], input[type="date"], select {
@@ -42,13 +35,6 @@ input[type="text"], input[type="date"], select {
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
-}
-
-label {
-    padding: 10px 0;
-    font-weight: bold;
-    color: #555;
-    align-self: center;
 }
 
 button {
@@ -67,7 +53,7 @@ button:hover {
     background-color: #004494;
 }
 
-/* --- NOVO ESTILO PARA OS FILTROS --- */
+/* --- ESTILO PARA OS FILTROS --- */
 .filters-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -82,7 +68,7 @@ button:hover {
 .clear-btn:hover {
     background-color: #5a6268;
 }
-/* --- FIM DO NOVO ESTILO --- */
+/* --- FIM DO ESTILO --- */
 
 
 #search-input {

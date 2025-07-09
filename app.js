@@ -181,7 +181,6 @@ function renderTable(data) {
 
 function aplicarFiltros() {
     console.log("DEBUG: aplicarFiltros() - Aplicando filtros na lista de funcionários.");
-    // ... (o resto das funções permanece igual, os logs principais estão no carregamento)
     const searchInput = document.getElementById('search-input');
     const filterAniversario = document.getElementById('filter-aniversario');
     const filterAdmissao = document.getElementById('filter-admissao');
@@ -236,9 +235,8 @@ function calcularTempoDeEmpresa(dataAdm) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("DEBUG: DOMContentLoaded - Documento HTML carregado. Inicializando listeners e formulários.");
+    console.log("DEBUG: DOMContentLoaded - Documento HTML carregado. Inicializando listeners.");
     const searchInput = document.getElementById('search-input');
-    const cadastroForm = document.getElementById('cadastro-form');
     const filterAniversario = document.getElementById('filter-aniversario');
     const filterAdmissao = document.getElementById('filter-admissao');
     const filterTempo = document.getElementById('filter-tempo');
@@ -265,37 +263,6 @@ document.addEventListener('DOMContentLoaded', () => {
         filterTempo.value = '';
         aplicarFiltros();
     });
-
-    cadastroForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        console.log("DEBUG: Formulário de cadastro enviado.");
-
-        const nome = document.getElementById('nome').value;
-        // ... (resto dos campos)
-
-        const novaLinha = [ /* ... */ ];
-        console.log("DEBUG: Enviando nova linha para a planilha:", novaLinha);
-
-        try {
-            await gapi.client.sheets.spreadsheets.values.append({
-                spreadsheetId: SPREADSHEET_ID,
-                range: RANGE,
-                valueInputOption: 'USER_ENTERED',
-                resource: {
-                    values: [novaLinha],
-                },
-            });
-
-            console.log("DEBUG: Funcionário cadastrado com sucesso na planilha.");
-            alert('Funcionário cadastrado com sucesso!');
-            await carregarFuncionarios(); 
-            cadastroForm.reset();
-
-        } catch (error) {
-            console.error("ERRO CRÍTICO ao cadastrar funcionário:", error);
-            alert("Não foi possível cadastrar o funcionário. Verifique o console para mais detalhes.");
-        }
-    });
-
+    
     popularFiltroTempo();
 });
